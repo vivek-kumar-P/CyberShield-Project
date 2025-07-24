@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login/Sign In - CyberShield</title>
+    <link rel="stylesheet" href="../css/login.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo-container">
+                <img src="../assets/image.png" alt="CyberShield Logo" class="logo-img">
+                <h1 class="logo">CyberShield</h1>
+            </div>
+            <nav>
+                <button class="hamburger" aria-label="Toggle navigation">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <ul class="nav-links">
+                    <li><a href="/#home">Home</a></li>
+                    <li><a href="/#services">Services</a></li>
+                    <li><a href="/#about">About</a></li>
+                    <li><a href="/#contact">Contact</a></li>
+                    <li><a href="login.html" class="login-btn">Login/Sign In</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="auth-section">
+        <div class="auth-container">
+            <div class="auth-form login-form active">
+                <h2>Login</h2>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="login-email">Email</label>
+                        <input type="email" id="login-email" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" placeholder="Enter your password" required>
+                    </div>
+                    <button type="submit" class="auth-btn">Login</button>
+                    <a href="/auth/github" class="auth-btn github-btn">Sign in with GitHub</a>
+                    <p class="auth-link">Don't have an account? <a href="#signup" class="toggle-form" data-form="signup">Sign Up</a></p>
+                    <p class="error-message" style="color: red; display: none;"></p>
+                </form>
+            </div>
+            <div class="auth-form signup-form">
+                <button class="back-btn toggle-form" data-form="login" aria-label="Back to Login">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 18l-6-6 6-6" />
+                    </svg>
+                    Back
+                </button>
+                <h2>Sign Up</h2>
+                <form id="signup-form">
+                    <div class="form-group">
+                        <label for="signup-name">Full Name</label>
+                        <input type="text" id="signup-name" placeholder="Enter your full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-email">Email</label>
+                        <input type="email" id="signup-email" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password">Password</label>
+                        <input type="password" id="signup-password" placeholder="Create a password" required>
+                    </div>
+                    <button type="submit" class="auth-btn">Sign Up</button>
+                    <p class="auth-link">Already have an account? <a href="#login" class="toggle-form" data-form="login">Login</a></p>
+                    <p class="error-message" style="color: red; display: none;"></p>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Notification Popup -->
+    <div id="notification" class="notification">
+        <span id="notification-message"></span>
+        <button id="notification-close">&times;</button>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>Contact Us: <a href="mailto:info@cybershield.com">info@cybershield.com</a> | Phone: (123) 456-7890</p>
+            <p>© 2025 CyberShield. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Notification functions
+        function showNotification(message, type = 'error') {
+            const notification = document.getElementById('notification');
+            const messageEl = document.getElementById('notification-message');
+            
+            messageEl.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                hideNotification();
+            }, 5000);
+        }
+
+        function hideNotification() {
+            const notification = document.getElementById('notification');
+            notification.classList.remove('show');
+        }
+
+        // Close notification when clicking the X
+        document.getElementById('notification-close').addEventListener('click', hideNotification);
+
+        const hamburger = document.querySelector('.hamburger');
+        const navLinks = document.querySelector('.nav-links');
+
+        hamburger.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            hamburger.classList.toggle('open');
+        });
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                navLinks.classList.remove('active');
+                hamburger.classList.remove('open');
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        const toggleForms = document.querySelectorAll('.toggle-form');
+        const loginForm = document.querySelector('.login-form');
+        const signupForm = document.querySelector('.signup-form');
+
+        toggleForms.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetForm = link.getAttribute('data-form');
+                if (targetForm === 'signup') {
+                    loginForm.classList.remove('active', 'slide-in-left');
+                    loginForm.classList.add('slide-out-left');
+                    signupForm.classList.remove('slide-out-right');
+                    signupForm.classList.add('active', 'slide-in-right');
+                } else {
+                    signupForm.classList.remove('active', 'slide-in-right');
+                    signupForm.classList.add('slide-out-right');
+                    loginForm.classList.remove('slide-out-left');
+                    loginForm.classList.add('active', 'slide-in-left');
+                }
+            });
+        });
+
+        document.getElementById('signup-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+
+            try {
+                const response = await fetch('/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    showNotification('Account created successfully! Redirecting...', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/dashboard.html';
+                    }, 1500);
+                } else {
+                    showNotification(result.error || 'Signup failed');
+                }
+            } catch (err) {
+                showNotification('Server error. Please try again.');
+            }
+        });
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    showNotification('Login successful! Redirecting...', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/dashboard.html';
+                    }, 1500);
+                } else {
+                    showNotification(result.error || 'Login failed');
+                }
+            } catch (err) {
+                showNotification('Server error. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>
