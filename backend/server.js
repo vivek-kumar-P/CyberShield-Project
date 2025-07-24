@@ -45,6 +45,35 @@ console.log('Static directories configured:', {
 // MongoDB Atlas Connection String
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://vkprajapati529:es1xRExTOoiOppaC@cybershield.krphlyj.mongodb.net/cybershield?retryWrites=true&w=majority';
 
+// Improved MongoDB connection for serverless environment
+let cachedConnection = null;
+
+async function connectToDatabase() {
+  if (cachedConnection && mongoose.connection.readyState === 1) {
+    console.log('Using cached MongoDB connection');
+    return cachedConnection;
+  }
+
+  try {
+    console.log('Creating new MongoDB connection...');
+    cachedConnection = await mongoose.connect(MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+      socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+      bufferMaxEntries: 0, // Disable mongoose buffering
+      bufferCommands: false, // Disable mongoose buffering
+      maxPoolSize: 1, // Maintain up to 1 socket connection for serverless
+    });
+    console.log('Connected to MongoDB Atlas');
+    return cachedConnection;
+  } catch (err) {
+    console.error('MongoDB connection error:', err);
+    throw err;
+  }
+}
+
+// Initialize connection
+connectToDatabase();
+
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
@@ -63,14 +92,6 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-
-// MongoDB Connection
-mongoose.connect(MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB Atlas'))
-  .catch(err => {
-    console.error('MongoDB connection error:', err);
-    process.exit(1);
-  });
 
 // User Schema - Check if model already exists to avoid OverwriteModelError
 const User = mongoose.models.User || mongoose.model('User', {
@@ -134,6 +155,9 @@ passport.use(new GitHubStrategy({
     : 'http://localhost:3000/auth/github/callback'
 }, async (accessToken, refreshToken, profile, done) => {
   try {
+    // Ensure database connection
+    await connectToDatabase();
+    
     console.log('GitHub Profile:', profile);
     const email = profile.emails && profile.emails[0] && profile.emails[0].value
       ? profile.emails[0].value
@@ -235,6 +259,9 @@ app.post('/signup', async (req, res, next) => {
 
 app.post('/login', async (req, res, next) => {
   try {
+    // Ensure database connection
+    await connectToDatabase();
+    
     console.log('Login attempt:', req.body.email);
     const { email, password } = req.body;
     
