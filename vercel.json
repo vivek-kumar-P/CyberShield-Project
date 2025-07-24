@@ -2,32 +2,14 @@
   "version": 2,
   "routes": [
     {
-      "src": "/assets/(.*)",
-      "dest": "/frontend/assets/$1"
+      "src": "/(.*)",
+      "dest": "/api/index.js",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "continue": true
     },
     {
-      "src": "/css/(.*)",
-      "dest": "/frontend/css/$1"
-    },
-    {
-      "src": "/(.*\\.(html|js|css|png|jpg|jpeg|gif|svg|ico))",
-      "dest": "/frontend/$1"
-    },
-    {
-      "src": "/",
-      "dest": "/frontend/public/index.html"
-    },
-    {
-      "src": "/(login|dashboard|profile)\\.html",
-      "dest": "/frontend/public/$1.html"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/(auth|login|signup|logout|user|upload-profile-picture|admin).*",
-      "dest": "/api/index.js"
+      "src": "/(.*)",
+      "dest": "/$1"
     }
   ],
   "functions": {

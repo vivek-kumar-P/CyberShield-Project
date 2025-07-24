@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node backend/server.js",
     "dev": "node backend/server.js",
-    "build": "echo 'Build complete'"
+    "build": "node build.js"
   },
   "engines": {
     "node": ">=14.0.0"
