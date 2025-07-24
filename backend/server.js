@@ -167,6 +167,7 @@ const isAdmin = (req, res, next) => {
 
 // Routes
 app.get('/', (req, res) => {
+  console.log('Root route accessed');
   if (req.isAuthenticated()) {
     res.redirect('/dashboard.html');
   } else {
@@ -192,6 +193,7 @@ app.get('/profile.html', isAuthenticated, (req, res) => {
 });
 
 app.get('/login.html', (req, res) => {
+  console.log('Login.html route accessed');
   const publicPath = isProduction 
     ? path.join(process.cwd(), 'frontend/public')
     : path.join(__dirname, '../frontend/public');
@@ -312,12 +314,13 @@ app.get('/admin/users', isAdmin, async (req, res) => {
   }
 });
 
-// Catch-all route to serve index.html for any unknown routes
-app.get('*', (req, res) => {
-  const publicPath = isProduction 
-    ? path.join(process.cwd(), 'frontend/public')
-    : path.join(__dirname, '../frontend/public');
-  res.sendFile('index.html', { root: publicPath });
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Express error:', err);
+  if (err.message.includes('path-to-regexp')) {
+    console.error('Path-to-regexp error detected:', req.url);
+  }
+  res.status(500).json({ error: 'Internal server error' });
 });
 
 // Start server
