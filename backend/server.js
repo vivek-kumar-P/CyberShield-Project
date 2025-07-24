@@ -14,18 +14,33 @@ require('dotenv').config();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://your-vercel-domain.vercel.app', 'https://cybershield-project.vercel.app']
+    : ['http://localhost:3000'],
+  credentials: true
+}));
 app.use(express.json());
-app.use(express.static('../frontend'));
-app.use('/public', express.static('../frontend/public'));
-app.use('/css', express.static('../frontend/css'));
-app.use('/assets', express.static('../frontend/assets'));
+
+// Static file serving - adjust paths for Vercel
+const isProduction = process.env.NODE_ENV === 'production';
+const frontendPath = isProduction ? path.join(process.cwd(), 'frontend') : '../frontend';
+
+app.use(express.static(frontendPath));
+app.use('/public', express.static(path.join(frontendPath, 'public')));
+app.use('/css', express.static(path.join(frontendPath, 'css')));
+app.use('/assets', express.static(path.join(frontendPath, 'assets')));
+
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({ mongoUrl: 'mongodb+srv://vkprajapati529:es1xRExTOoiOppaC@cybershield.krphlyj.mongodb.net/cybershield?retryWrites=true&w=majority' }),
-  cookie: { maxAge: 24 * 60 * 60 * 1000 } // 1 day
+  cookie: { 
+    maxAge: 24 * 60 * 60 * 1000, // 1 day
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax'
+  }
 }));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -44,10 +59,12 @@ const User = mongoose.model('User', {
   profilePicture: { type: String, default: '/assets/default-avatar.png' }
 });
 
-// Multer configuration for file uploads
+// Multer configuration for file uploads - Vercel compatible
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const uploadDir = path.join(__dirname, '../frontend/assets/uploads');
+    const uploadDir = isProduction 
+      ? path.join(process.cwd(), 'frontend/assets/uploads')
+      : path.join(__dirname, '../frontend/assets/uploads');
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -129,16 +146,39 @@ app.get('/', (req, res) => {
   if (req.isAuthenticated()) {
     res.redirect('/dashboard.html');
   } else {
-    res.sendFile('index.html', { root: '../frontend/public' });
+    const publicPath = isProduction 
+      ? path.join(process.cwd(), 'frontend/public')
+      : path.join(__dirname, '../frontend/public');
+    res.sendFile('index.html', { root: publicPath });
   }
 });
 
 app.get('/dashboard.html', isAuthenticated, (req, res) => {
-  res.sendFile('dashboard.html', { root: '../frontend/public' });
+  const publicPath = isProduction 
+    ? path.join(process.cwd(), 'frontend/public')
+    : path.join(__dirname, '../frontend/public');
+  res.sendFile('dashboard.html', { root: publicPath });
 });
 
 app.get('/profile.html', isAuthenticated, (req, res) => {
-  res.sendFile('profile.html', { root: '../frontend/public' });
+  const publicPath = isProduction 
+    ? path.join(process.cwd(), 'frontend/public')
+    : path.join(__dirname, '../frontend/public');
+  res.sendFile('profile.html', { root: publicPath });
+});
+
+app.get('/login.html', (req, res) => {
+  const publicPath = isProduction 
+    ? path.join(process.cwd(), 'frontend/public')
+    : path.join(__dirname, '../frontend/public');
+  res.sendFile('login.html', { root: publicPath });
+});
+
+app.get('/index.html', (req, res) => {
+  const publicPath = isProduction 
+    ? path.join(process.cwd(), 'frontend/public')
+    : path.join(__dirname, '../frontend/public');
+  res.sendFile('index.html', { root: publicPath });
 });
 
 app.get('/login.html', (req, res) => {
@@ -242,4 +282,10 @@ app.get('/admin/users', isAdmin, async (req, res) => {
 });
 
 // Start server
-app.listen(3000, () => console.log('Server running on http://localhost:3000'));
+const PORT = process.env.PORT || 3000;
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+}
+
+// Export for Vercel
+module.exports = app;
