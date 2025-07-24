@@ -35,20 +35,33 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
   saveUninitialized: false,
-  store: MongoStore.create({ mongoUrl: 'mongodb+srv://vkprajapati529:es1xRExTOoiOppaC@cybershield.krphlyj.mongodb.net/cybershield?retryWrites=true&w=majority' }),
+  store: MongoStore.create({ 
+    mongoUrl: MONGODB_URI,
+    touchAfter: 24 * 3600, // lazy session update
+    ttl: 24 * 60 * 60 // 24 hours
+  }),
   cookie: { 
     maxAge: 24 * 60 * 60 * 1000, // 1 day
     secure: isProduction,
-    sameSite: isProduction ? 'none' : 'lax'
+    sameSite: isProduction ? 'none' : 'lax',
+    httpOnly: true
   }
 }));
 app.use(passport.initialize());
 app.use(passport.session());
 
 // MongoDB Atlas Connection
-mongoose.connect('mongodb+srv://vkprajapati529:es1xRExTOoiOppaC@cybershield.krphlyj.mongodb.net/cybershield?retryWrites=true&w=majority')
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://vkprajapati529:es1xRExTOoiOppaC@cybershield.krphlyj.mongodb.net/cybershield?retryWrites=true&w=majority';
+
+mongoose.connect(MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
   .then(() => console.log('Connected to MongoDB Atlas'))
-  .catch(err => console.error('MongoDB connection error:', err));
+  .catch(err => {
+    console.error('MongoDB connection error:', err);
+    process.exit(1);
+  });
 
 // User Schema
 const User = mongoose.model('User', {
@@ -107,7 +120,9 @@ passport.deserializeUser(async (id, done) => {
 passport.use(new GitHubStrategy({
   clientID: process.env.GITHUB_CLIENT_ID || 'Ov23lia45eitwAS1qbWz',
   clientSecret: process.env.GITHUB_CLIENT_SECRET || '3a72901bb03a117400717cad61670966e4cd79c4',
-  callbackURL: 'http://localhost:3000/auth/github/callback'
+  callbackURL: isProduction 
+    ? 'https://cyber-shield-project.vercel.app/auth/github/callback'
+    : 'http://localhost:3000/auth/github/callback'
 }, async (accessToken, refreshToken, profile, done) => {
   try {
     console.log('GitHub Profile:', profile);
@@ -217,21 +232,36 @@ app.post('/signup', async (req, res, next) => {
 
 app.post('/login', async (req, res, next) => {
   try {
+    console.log('Login attempt:', req.body.email);
     const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+    
     const user = await User.findOne({ email });
     if (!user) {
+      console.log('User not found for email:', email);
       return res.status(401).json({ error: 'Invalid email or password' });
     }
+    
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      console.log('Password mismatch for user:', email);
       return res.status(401).json({ error: 'Invalid email or password' });
     }
+    
     req.login(user, (err) => {
-      if (err) return next(err);
+      if (err) {
+        console.error('Login error:', err);
+        return next(err);
+      }
+      console.log('Login successful for user:', email);
       res.json({ message: 'Login successful' });
     });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    console.error('Login route error:', err);
+    res.status(500).json({ error: 'Server error: ' + err.message });
   }
 });
 

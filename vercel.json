@@ -1,20 +1,35 @@
 {
   "version": 2,
-  "routes": [
+  "builds": [
     {
-      "src": "/(.*)",
-      "dest": "/api/index.js",
-      "methods": ["GET", "POST", "PUT", "DELETE"],
-      "continue": true
+      "src": "api/index.js",
+      "use": "@vercel/node"
     },
     {
-      "src": "/(.*)",
-      "dest": "/$1"
+      "src": "public/**/*",
+      "use": "@vercel/static"
     }
   ],
-  "functions": {
-    "api/index.js": {
-      "maxDuration": 30
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/(auth|login|signup|logout|user|upload-profile-picture|admin).*",
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/(assets|css|public)/(.*)",
+      "dest": "/public/$1/$2"
+    },
+    {
+      "src": "/(.*\\.(html|js|css|png|jpg|jpeg|gif|svg|ico))",
+      "dest": "/public/$1"
+    },
+    {
+      "src": "/",
+      "dest": "/public/public/index.html"
     }
-  }
+  ]
 }
