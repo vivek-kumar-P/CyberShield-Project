@@ -59,8 +59,6 @@ async function connectToDatabase() {
     cachedConnection = await mongoose.connect(MONGODB_URI, {
       serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
       socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
-      bufferMaxEntries: 0, // Disable mongoose buffering
-      bufferCommands: false, // Disable mongoose buffering
       maxPoolSize: 1, // Maintain up to 1 socket connection for serverless
     });
     console.log('Connected to MongoDB Atlas');
