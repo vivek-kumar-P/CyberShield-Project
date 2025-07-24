@@ -1,4 +1,5 @@
 const app = require('../backend/server.js');
+const path = require('path');
 
 // Export for Vercel serverless functions
 module.exports = (req, res) => {
@@ -13,6 +14,9 @@ module.exports = (req, res) => {
     res.status(200).end();
     return;
   }
+
+  // Log for debugging
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
 
   // Pass to Express app
   return app(req, res);

@@ -24,12 +24,26 @@ app.use(express.json());
 
 // Static file serving - adjust paths for Vercel
 const isProduction = process.env.NODE_ENV === 'production';
-const frontendPath = isProduction ? path.join(process.cwd(), 'frontend') : '../frontend';
+const frontendPath = isProduction 
+  ? path.join(process.cwd(), 'frontend') 
+  : path.join(__dirname, '../frontend');
 
-app.use(express.static(frontendPath));
-app.use('/public', express.static(path.join(frontendPath, 'public')));
+// Configure static file serving
+app.use(express.static(path.join(frontendPath, 'public')));
 app.use('/css', express.static(path.join(frontendPath, 'css')));
 app.use('/assets', express.static(path.join(frontendPath, 'assets')));
+app.use('/js', express.static(path.join(frontendPath, 'assets/js')));
+
+// Log static paths for debugging
+console.log('Frontend path:', frontendPath);
+console.log('Static directories configured:', {
+  public: path.join(frontendPath, 'public'),
+  css: path.join(frontendPath, 'css'),
+  assets: path.join(frontendPath, 'assets')
+});
+
+// MongoDB Atlas Connection String
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://vkprajapati529:es1xRExTOoiOppaC@cybershield.krphlyj.mongodb.net/cybershield?retryWrites=true&w=majority';
 
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key',
@@ -50,9 +64,7 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// MongoDB Atlas Connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://vkprajapati529:es1xRExTOoiOppaC@cybershield.krphlyj.mongodb.net/cybershield?retryWrites=true&w=majority';
-
+// MongoDB Connection
 mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -309,6 +321,11 @@ app.get('/admin/users', isAdmin, async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
   }
+});
+
+// Catch-all route to serve index.html for any unknown routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'public', 'index.html'));
 });
 
 // Start server
