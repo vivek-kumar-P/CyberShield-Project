@@ -16,7 +16,7 @@ const app = express();
 // Middleware
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-vercel-domain.vercel.app', 'https://cybershield-project.vercel.app']
+    ? ['https://cyber-shield-project.vercel.app']
     : ['http://localhost:3000'],
   credentials: true
 }));
@@ -65,18 +65,15 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // MongoDB Connection
-mongoose.connect(MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(MONGODB_URI)
   .then(() => console.log('Connected to MongoDB Atlas'))
   .catch(err => {
     console.error('MongoDB connection error:', err);
     process.exit(1);
   });
 
-// User Schema
-const User = mongoose.model('User', {
+// User Schema - Check if model already exists to avoid OverwriteModelError
+const User = mongoose.models.User || mongoose.model('User', {
   name: String,
   email: { type: String, unique: true },
   password: String,
@@ -208,14 +205,6 @@ app.get('/index.html', (req, res) => {
   res.sendFile('index.html', { root: publicPath });
 });
 
-app.get('/login.html', (req, res) => {
-  res.sendFile('login.html', { root: '../frontend/public' });
-});
-
-app.get('/index.html', (req, res) => {
-  res.sendFile('index.html', { root: '../frontend/public' });
-});
-
 app.get('/auth/github', passport.authenticate('github', { scope: ['user:email', 'read:user'] }));
 app.get('/auth/github/callback', passport.authenticate('github', { failureRedirect: '/login.html' }), (req, res) => {
   res.redirect('/dashboard.html');
@@ -325,7 +314,10 @@ app.get('/admin/users', isAdmin, async (req, res) => {
 
 // Catch-all route to serve index.html for any unknown routes
 app.get('*', (req, res) => {
-  res.sendFile(path.join(frontendPath, 'public', 'index.html'));
+  const publicPath = isProduction 
+    ? path.join(process.cwd(), 'frontend/public')
+    : path.join(__dirname, '../frontend/public');
+  res.sendFile('index.html', { root: publicPath });
 });
 
 // Start server
