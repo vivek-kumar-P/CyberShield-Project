@@ -43,7 +43,7 @@ console.log('Static directories configured:', {
 });
 
 // MongoDB Atlas Connection String
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://vkprajapati529:es1xRExTOoiOppaC@cybershield.krphlyj.mongodb.net/cybershield?retryWrites=true&w=majority';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://vkprajapati529:es1xRExTOoiOppaC@cybershield.krphlyj.mongodb.net/?retryWrites=true&w=majority&appName=CyberShield';
 
 // Improved MongoDB connection for serverless environment
 let cachedConnection = null;
