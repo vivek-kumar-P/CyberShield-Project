@@ -43,7 +43,7 @@ console.log('Static directories configured:', {
 });
 
 // MongoDB Atlas Connection String
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://vkprajapati529:es1xRExTOoiOppaC@cybershield.krphlyj.mongodb.net/?retryWrites=true&w=majority&appName=CyberShield';
+const MONGODB_URI = process.env.MONGODB_URI ;
 
 // Improved MongoDB connection for serverless environment
 let cachedConnection = null;
@@ -97,7 +97,15 @@ const User = mongoose.models.User || mongoose.model('User', {
   email: { type: String, unique: true },
   password: String,
   githubId: String,
-  profilePicture: { type: String, default: '/assets/default-avatar.png' }
+  profilePicture: { type: String, default: '/assets/user-icon.svg' },
+  newsletter: { type: Boolean, default: false },
+  lastLogin: Date,
+  securityScore: { type: Number, default: 0 },
+  preferences: {
+    twoFactorEnabled: { type: Boolean, default: false },
+    emailNotifications: { type: Boolean, default: true },
+    activityAlerts: { type: Boolean, default: true }
+  }
 });
 
 // Multer configuration for file uploads - Vercel compatible
@@ -313,6 +321,16 @@ app.post('/upload-profile-picture', isAuthenticated, upload.single('profilePictu
 
     const profilePicturePath = `/assets/uploads/${req.file.filename}`;
     
+    // Delete old profile picture if it exists and is not the default
+    if (req.user.profilePicture && !req.user.profilePicture.includes('default-avatar') && !req.user.profilePicture.includes('user-icon')) {
+      const oldPicturePath = path.join(frontendPath, req.user.profilePicture);
+      try {
+        await fs.promises.unlink(oldPicturePath);
+      } catch (err) {
+        console.error('Error deleting old profile picture:', err);
+      }
+    }
+    
     // Update user profile picture in database
     await User.findByIdAndUpdate(req.user._id, { profilePicture: profilePicturePath });
     
@@ -330,12 +348,69 @@ app.post('/upload-profile-picture', isAuthenticated, upload.single('profilePictu
   }
 });
 
+// Delete profile picture endpoint
+app.delete('/profile-picture', isAuthenticated, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    
+    // Check if user has a custom profile picture
+    if (user.profilePicture && !user.profilePicture.includes('default-avatar') && !user.profilePicture.includes('user-icon')) {
+      // Delete the file
+      const picturePath = path.join(frontendPath, user.profilePicture);
+      try {
+        await fs.promises.unlink(picturePath);
+      } catch (err) {
+        console.error('Error deleting profile picture file:', err);
+      }
+    }
+
+    // Reset to default avatar
+    const defaultAvatar = '/assets/user-icon.svg';
+    await User.findByIdAndUpdate(req.user._id, { profilePicture: defaultAvatar });
+    
+    // Update session user object
+    req.user.profilePicture = defaultAvatar;
+    
+    res.json({ 
+      success: true, 
+      profilePicture: defaultAvatar,
+      message: 'Profile picture deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete profile picture error:', error);
+    res.status(500).json({ error: 'Failed to delete profile picture' });
+  }
+});
+
 app.get('/admin/users', isAdmin, async (req, res) => {
   try {
     const users = await User.find({}, 'name email githubId profilePicture');
     res.json(users);
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Newsletter subscription endpoint
+app.post('/api/subscribe', isAuthenticated, async (req, res) => {
+  try {
+    // Use the authenticated user's email
+    const user = await User.findById(req.user._id);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    user.newsletter = true;
+    await user.save();
+    
+    res.json({ 
+      success: true,
+      message: 'Successfully subscribed to newsletter'
+    });
+  } catch (err) {
+    console.error('Subscription error:', err);
+    res.status(500).json({ error: 'Failed to subscribe' });
   }
 });
 

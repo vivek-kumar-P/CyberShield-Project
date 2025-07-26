@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CyberShield - Cybersecurity Solutions</title>
     <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/footer.css">
+    <link rel="stylesheet" href="../css/layout-fixes.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <header>
@@ -189,13 +192,29 @@
         </div>
     </section>
 
-    <footer id="contact">
-        <div class="container">
-            <p>Contact Us: <a href="mailto:info@cybershield.com">info@cybershield.com</a> | Phone: (123) 456-7890</p>
-            <p>© 2025 CyberShield. All rights reserved.</p>
-        </div>
-    </footer>
+    <!-- Include Footer -->
+    <div id="footer-placeholder"></div>
 
+    <script>
+        // Load footer
+        fetch('/components/footer.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('footer-placeholder').innerHTML = data;
+                // Initialize footer functionality
+                const subscribeForm = document.getElementById('subscribe-form');
+                if (subscribeForm) {
+                    subscribeForm.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        const email = document.getElementById('subscribe-email').value;
+                        subscribeToNewsletter(email);
+                    });
+                }
+            })
+            .catch(error => console.error('Error loading footer:', error));
+    </script>
+    
+    <script src="../assets/js/landing.js"></script>
     <script>
         const hamburger = document.querySelector('.hamburger');
         const navLinks = document.querySelector('.nav-links');

@@ -47,6 +47,9 @@ function initializeProfileUpload() {
                     if (profilePicLarge) profilePicLarge.src = result.profilePicture;
                     if (sidebarProfilePic) sidebarProfilePic.src = result.profilePicture;
                     
+                    // Show delete button
+                    document.getElementById('delete-photo-btn').style.display = 'flex';
+                    
                     showNotification('Profile picture updated successfully!', 'success');
                 } else {
                     showNotification('Failed to upload profile picture');
@@ -57,6 +60,44 @@ function initializeProfileUpload() {
             }
         }
     });
+
+    // Initialize delete photo button
+    const deleteBtn = document.getElementById('delete-photo-btn');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', async function(e) {
+            e.stopPropagation(); // Prevent triggering other overlays
+            
+            if (confirm('Are you sure you want to delete your profile picture?')) {
+                try {
+                    const response = await fetch('/profile-picture', {
+                        method: 'DELETE'
+                    });
+                    
+                    if (response.ok) {
+                        // Update all profile pictures to default
+                        const defaultAvatar = '/assets/default-avatar.png';
+                        const profilePic = document.getElementById('profile-pic');
+                        const profilePicLarge = document.getElementById('profile-pic-large');
+                        const sidebarProfilePic = document.getElementById('sidebar-profile-pic');
+                        
+                        if (profilePic) profilePic.src = defaultAvatar;
+                        if (profilePicLarge) profilePicLarge.src = defaultAvatar;
+                        if (sidebarProfilePic) sidebarProfilePic.src = defaultAvatar;
+                        
+                        // Hide delete button
+                        deleteBtn.style.display = 'none';
+                        
+                        showNotification('Profile picture deleted successfully!', 'success');
+                    } else {
+                        showNotification('Failed to delete profile picture');
+                    }
+                } catch (err) {
+                    console.error('Delete error:', err);
+                    showNotification('Error deleting profile picture');
+                }
+            }
+        });
+    }
 }
 
 // Live resource data simulation

@@ -3,18 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CyberShield - Secure Profile Settings">
     <title>CyberShield - Profile Settings</title>
+    
+    <!-- Preload Critical Resources -->
+    <link rel="preload" href="../css/dashboard.css" as="style">
+    <link rel="preload" href="../css/profile.css" as="style">
+    <link rel="preload" href="../css/footer.css" as="style">
+    <link rel="preload" href="../assets/image.png" as="image">
     
     <!-- CSS Files -->
     <link rel="stylesheet" href="../css/dashboard.css">
     <link rel="stylesheet" href="../css/profile.css">
+    <link rel="stylesheet" href="../css/footer.css">
     
-    <!-- Fonts -->
+    <!-- Optimized Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome (with preload) -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Chart.js (deferred) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    
+    <!-- Preload Footer -->
+    <link rel="prefetch" href="/components/footer.html">
 </head>
 <body>
     <!-- Header -->
@@ -81,6 +98,9 @@
                         <img src="/assets/default-avatar.png" alt="Profile Picture" class="profile-pic-large" id="profile-pic-large">
                         <div class="upload-overlay">
                             <span class="upload-icon">📷</span>
+                        </div>
+                        <div class="delete-overlay" id="delete-photo-btn" style="display: none;">
+                            <span class="delete-icon">🗑️</span>
                         </div>
                         <input type="file" id="profile-upload" class="profile-upload" accept="image/*">
                     </div>
@@ -164,10 +184,29 @@
         </div>
     </section>
 
+    <!-- Include Footer -->
+    <div id="footer-placeholder"></div>
+
     <!-- JavaScript Files -->
     <script src="../assets/js/profile.js"></script>
     
     <!-- Common dashboard functionality -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const footerPlaceholder = document.getElementById('footer-placeholder');
+            footerPlaceholder.innerHTML = '<div style="text-align: center; padding: 2rem;">Loading footer...</div>';
+            
+            fetch('../components/footer.html')
+                .then(response => response.text())
+                .then(data => {
+                    footerPlaceholder.innerHTML = data;
+                })
+                .catch(error => {
+                    console.error('Error loading footer:', error);
+                    footerPlaceholder.innerHTML = '<div style="text-align: center; padding: 2rem;">Error loading footer</div>';
+                });
+        });
+    </script>
     <script>
         // Load user profile data
         fetch('/user')
@@ -177,10 +216,11 @@
                     document.getElementById('profile-name').textContent = data.user.name || 'User Profile';
                     document.getElementById('profile-email').textContent = data.user.email || 'user@example.com';
                     
-                    if (data.user.profilePicture) {
+                    if (data.user.profilePicture && data.user.profilePicture !== '/assets/default-avatar.png') {
                         document.getElementById('profile-pic').src = data.user.profilePicture;
                         document.getElementById('profile-pic-large').src = data.user.profilePicture;
                         document.getElementById('sidebar-profile-pic').src = data.user.profilePicture;
+                        document.getElementById('delete-photo-btn').style.display = 'flex';
                     }
                 }
             })
@@ -204,6 +244,28 @@
         document.querySelector('.profile-pic-large').addEventListener('click', function() {
             document.getElementById('profile-upload').click();
         });
+
+        // Optimized footer loading
+        async function loadFooter() {
+            const footerPlaceholder = document.createElement('div');
+            footerPlaceholder.innerHTML = '<div class="footer-placeholder" style="height: 400px; background: linear-gradient(135deg, rgba(13, 17, 23, 0.98), rgba(23, 32, 47, 0.98));"></div>';
+            document.body.appendChild(footerPlaceholder);
+
+            try {
+                const response = await fetch('/components/footer.html');
+                const data = await response.text();
+                footerPlaceholder.innerHTML = data;
+            } catch (error) {
+                console.error('Error loading footer:', error);
+            }
+        }
+        
+        // Load footer when the main content is loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadFooter);
+        } else {
+            loadFooter();
+        }
     </script>
 </body>
 </html>

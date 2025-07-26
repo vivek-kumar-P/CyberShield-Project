@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CyberShield - Dashboard</title>
     <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
+    <link rel="stylesheet" href="../css/footer.css">
+    <link rel="stylesheet" href="../css/layout-fixes.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <header>
@@ -34,17 +38,19 @@
     </header>
 
     <aside class="sidebar" id="sidebar">
-        <div class="sidebar-profile">
-            <img src="/assets/default-avatar.png" alt="Profile Picture" class="sidebar-profile-pic" id="sidebar-profile-pic">
+        <div class="sidebar-content">
+            <div class="sidebar-profile">
+                <img src="/assets/default-avatar.png" alt="Profile Picture" class="sidebar-profile-pic" id="sidebar-profile-pic">
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="#security-dashboard" class="sidebar-item">Security Dashboard</a></li>
+                <li><a href="#threat-alerts" class="sidebar-item">Threat Alerts</a></li>
+                <li><a href="#password-manager" class="sidebar-item">Password Manager</a></li>
+                <li><a href="#network-scan" class="sidebar-item">Network Scan</a></li>
+                <li><a href="#data-encryption" class="sidebar-item">Data Encryption</a></li>
+                <li><a href="/profile.html" class="sidebar-item">Profile Settings</a></li>
+            </ul>
         </div>
-        <ul class="sidebar-menu">
-            <li><a href="#security-dashboard" class="sidebar-item">Security Dashboard</a></li>
-            <li><a href="#threat-alerts" class="sidebar-item">Threat Alerts</a></li>
-            <li><a href="#password-manager" class="sidebar-item">Password Manager</a></li>
-            <li><a href="#network-scan" class="sidebar-item">Network Scan</a></li>
-            <li><a href="#data-encryption" class="sidebar-item">Data Encryption</a></li>
-            <li><a href="/profile.html" class="sidebar-item">Profile Settings</a></li>
-        </ul>
         <button class="logout-btn" aria-label="Logout">
             <span>🚪</span>
             <span>Logout</span>
@@ -110,75 +116,90 @@
         </div>
     </section>
 
-    <footer id="contact">
-        <div class="container">
-            <p>Contact Us: <a href="mailto:info@cybershield.com">info@cybershield.com</a> | Phone: (123) 456-7890</p>
-            <p>© 2025 CyberShield. All rights reserved.</p>
-        </div>
-    </footer>
+    <!-- Include Footer -->
+    <div id="footer-placeholder"></div>
 
+    <!-- Scripts -->
+    <script src="../assets/js/landing.js"></script>
     <script>
-        // Navbar hamburger
-        const hamburger = document.querySelector('.hamburger');
-        const navLinks = document.querySelector('.nav-links');
-        hamburger.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-            hamburger.classList.toggle('open');
-        });
-
-        // Sidebar toggle
-        const profilePic = document.getElementById('profile-pic');
-        const sidebar = document.getElementById('sidebar');
-        profilePic.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
-        });
-
-        // Logout button
-        document.querySelector('.logout-btn').addEventListener('click', () => {
-            fetch('/logout')
-                .then(() => window.location.href = '/')
-                .catch(err => console.error('Logout error:', err));
-        });
-
-        // Fetch user data and update profile pictures
-        fetch('/user')
-            .then(response => response.json())
-            .then(data => {
-                if (data.user) {
-                    const headerProfilePic = document.getElementById('profile-pic');
-                    const sidebarProfilePic = document.getElementById('sidebar-profile-pic');
-                    
-                    if (data.user.profilePicture && data.user.profilePicture !== '/assets/default-avatar.png') {
-                        headerProfilePic.src = data.user.profilePicture;
-                        sidebarProfilePic.src = data.user.profilePicture;
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load footer with error handling and visual feedback
+            const footerPlaceholder = document.getElementById('footer-placeholder');
+            footerPlaceholder.innerHTML = '<div style="text-align: center; padding: 2rem;">Loading footer...</div>';
+            
+            fetch('../components/footer.html')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('footer-placeholder').innerHTML = data;
+                    // Initialize footer functionality
+                    const subscribeForm = document.getElementById('subscribe-form');
+                    if (subscribeForm) {
+                        subscribeForm.addEventListener('submit', (e) => {
+                            e.preventDefault();
+                            const email = document.getElementById('subscribe-email').value;
+                            subscribeToNewsletter(email);
+                        });
                     }
-                }
-            })
-            .catch(err => console.log('Could not fetch user data'));
+                })
+                .catch(error => console.error('Error loading footer:', error));
 
-        // Smooth scrolling
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                navLinks.classList.remove('active');
-                hamburger.classList.remove('open');
-                sidebar.classList.remove('active');
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
+            // Navbar hamburger
+            const hamburger = document.querySelector('.hamburger');
+            const navLinks = document.querySelector('.nav-links');
+            hamburger.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+                hamburger.classList.toggle('open');
+            });
+
+            // Sidebar toggle
+            const profilePic = document.getElementById('profile-pic');
+            const sidebar = document.getElementById('sidebar');
+            profilePic.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+            });
+
+            // Logout button
+            document.querySelector('.logout-btn').addEventListener('click', () => {
+                fetch('/logout')
+                    .then(() => window.location.href = '/')
+                    .catch(err => console.error('Logout error:', err));
+            });
+
+            // Fetch user data and update profile pictures
+            fetch('/user')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.user) {
+                        document.getElementById('user-name').textContent = data.user.name || 'User';
+                        const headerProfilePic = document.getElementById('profile-pic');
+                        const sidebarProfilePic = document.getElementById('sidebar-profile-pic');
+                        
+                        if (data.user.profilePicture) {
+                            headerProfilePic.src = data.user.profilePicture;
+                            sidebarProfilePic.src = data.user.profilePicture;
+                        }
+                    }
+                })
+                .catch(err => console.error('Could not fetch user data:', err));
+
+            // Smooth scrolling
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    navLinks.classList.remove('active');
+                    hamburger.classList.remove('open');
+                    sidebar.classList.remove('active');
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                    }
                 });
             });
         });
-
-        // Fetch user data
-        fetch('/user')
-            .then(response => response.json())
-            .then(data => {
-                if (data.user) {
-                    document.getElementById('user-name').textContent = data.user.name || 'User';
-                    document.getElementById('profile-pic').src = data.user.profilePicture;
-                }
-            })
-            .catch(err => console.error('Error fetching user data:', err));
     </script>
+</body>
+</html>
 </body>
 </html>
