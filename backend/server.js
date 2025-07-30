@@ -13,39 +13,48 @@ require('dotenv').config();
 
 const app = express();
 
-// Middleware
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://cyber-shield-project.vercel.app']
-    : ['http://localhost:3000'],
-  credentials: true
-}));
-app.use(express.json());
-
-// Static file serving - adjust paths for Vercel
+// Environment variables and configuration
+const MONGODB_URI = process.env.MONGODB_URI;
+const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID;
+const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
 const isProduction = process.env.NODE_ENV === 'production';
 const frontendPath = isProduction 
   ? path.join(process.cwd(), 'frontend') 
   : path.join(__dirname, '../frontend');
 
-// Configure static file serving
-app.use(express.static(path.join(frontendPath, 'public')));
-app.use('/css', express.static(path.join(frontendPath, 'css')));
-app.use('/assets', express.static(path.join(frontendPath, 'assets')));
-app.use('/js', express.static(path.join(frontendPath, 'assets/js')));
-
-// Log static paths for debugging
-console.log('Frontend path:', frontendPath);
-console.log('Static directories configured:', {
-  public: path.join(frontendPath, 'public'),
-  css: path.join(frontendPath, 'css'),
-  assets: path.join(frontendPath, 'assets')
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const uploadDir = path.join(frontendPath, 'assets', 'uploads');
+        // Create directory if it doesn't exist
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'profile-' + uniqueSuffix + path.extname(file.originalname));
+    }
 });
 
-// MongoDB Atlas Connection String
-const MONGODB_URI = process.env.MONGODB_URI ;
+const fileFilter = (req, file, cb) => {
+    // Accept only image files
+    if (file.mimetype.startsWith('image/')) {
+        cb(null, true);
+    } else {
+        cb(new Error('Not an image! Please upload an image file.'), false);
+    }
+};
 
-// Improved MongoDB connection for serverless environment
+// Configure multer upload
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    fileFilter: fileFilter
+});
+
+// Improved MongoDB connection setup
 let cachedConnection = null;
 
 async function connectToDatabase() {
@@ -57,9 +66,9 @@ async function connectToDatabase() {
   try {
     console.log('Creating new MongoDB connection...');
     cachedConnection = await mongoose.connect(MONGODB_URI, {
-      serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
-      socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
-      maxPoolSize: 1, // Maintain up to 1 socket connection for serverless
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      maxPoolSize: 1,
     });
     console.log('Connected to MongoDB Atlas');
     return cachedConnection;
@@ -71,25 +80,6 @@ async function connectToDatabase() {
 
 // Initialize connection
 connectToDatabase();
-
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key',
-  resave: false,
-  saveUninitialized: false,
-  store: MongoStore.create({ 
-    mongoUrl: MONGODB_URI,
-    touchAfter: 24 * 3600, // lazy session update
-    ttl: 24 * 60 * 60 // 24 hours
-  }),
-  cookie: { 
-    maxAge: 24 * 60 * 60 * 1000, // 1 day
-    secure: isProduction,
-    sameSite: isProduction ? 'none' : 'lax',
-    httpOnly: true
-  }
-}));
-app.use(passport.initialize());
-app.use(passport.session());
 
 // User Schema - Check if model already exists to avoid OverwriteModelError
 const User = mongoose.models.User || mongoose.model('User', {
@@ -108,77 +98,102 @@ const User = mongoose.models.User || mongoose.model('User', {
   }
 });
 
-// Multer configuration for file uploads - Vercel compatible
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadDir = isProduction 
-      ? path.join(process.cwd(), 'frontend/assets/uploads')
-      : path.join(__dirname, '../frontend/assets/uploads');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'profile-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
+// Additional route middleware
 
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-  fileFilter: function (req, file, cb) {
-    const allowedTypes = /jpeg|jpg|png|gif/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
-    
-    if (mimetype && extname) {
-      return cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed'));
-    }
-  }
-});
-
-// Passport Serialization
-passport.serializeUser((user, done) => done(null, user.id));
-passport.deserializeUser(async (id, done) => {
-  try {
-    const user = await User.findById(id);
-    done(null, user);
-  } catch (err) {
-    done(err);
-  }
-});
-
-// GitHub OAuth
-passport.use(new GitHubStrategy({
-  clientID: process.env.GITHUB_CLIENT_ID || 'Ov23lia45eitwAS1qbWz',
-  clientSecret: process.env.GITHUB_CLIENT_SECRET || '3a72901bb03a117400717cad61670966e4cd79c4',
-  callbackURL: isProduction 
-    ? 'https://cyber-shield-project.vercel.app/auth/github/callback'
-    : 'http://localhost:3000/auth/github/callback'
-}, async (accessToken, refreshToken, profile, done) => {
-  try {
-    // Ensure database connection
-    await connectToDatabase();
-    
-    console.log('GitHub Profile:', profile);
-    const email = profile.emails && profile.emails[0] && profile.emails[0].value
-      ? profile.emails[0].value
-      : (profile.username ? `${profile.username}@github.com` : `user-${profile.id}@github.com`);
-    const user = await User.findOneAndUpdate(
-      { githubId: profile.id },
-      { email: email, profilePicture: profile.photos && profile.photos[0] ? profile.photos[0].value : '/assets/default-avatar.png' },
-      { upsert: true, new: true }
-    );
-    return done(null, user);
-  } catch (err) {
-    console.error('Error in GitHub OAuth:', err);
-    return done(err);
-  }
+// Middleware
+app.use(cors({
+  origin: isProduction 
+    ? ['https://cyber-shield-project.vercel.app']
+    : ['http://localhost:3000'],
+  credentials: true
 }));
+app.use(express.json());
+
+// Configure static file serving
+app.use(express.static(path.join(frontendPath, 'public')));
+app.use('/css', express.static(path.join(frontendPath, 'css')));
+app.use('/assets', express.static(path.join(frontendPath, 'assets')));
+app.use('/js', express.static(path.join(frontendPath, 'assets/js')));
+
+// Session configuration
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'your-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({ 
+        mongoUrl: MONGODB_URI,
+        ttl: 24 * 60 * 60 // 1 day
+    }),
+    cookie: {
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        maxAge: 24 * 60 * 60 * 1000 // 1 day
+    }
+}));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+// GitHub OAuth Configuration
+const CALLBACK_URL = isProduction
+    ? 'https://cyber-shield-project.vercel.app/auth/github/callback'
+    : 'http://localhost:3000/auth/github/callback';
+
+passport.use(new GitHubStrategy({
+    clientID: GITHUB_CLIENT_ID,
+    clientSecret: GITHUB_CLIENT_SECRET,
+    callbackURL: CALLBACK_URL
+}, async (accessToken, refreshToken, profile, done) => {
+    try {
+        await connectToDatabase();
+        
+        // Create email from GitHub profile
+        const email = profile.emails?.[0]?.value || 
+            (profile.username ? `${profile.username}@github.com` : `user-${profile.id}@github.com`);
+        
+        // Find or create user
+        const user = await User.findOneAndUpdate(
+            { githubId: profile.id },
+            { 
+                name: profile.displayName || profile.username,
+                email: email,
+                profilePicture: profile.photos?.[0]?.value || '/assets/default-avatar.png'
+            },
+            { upsert: true, new: true }
+        );
+        return done(null, user);
+    } catch (error) {
+        console.error('Error in GitHub OAuth:', error);
+        return done(error, null);
+    }
+}));
+
+// Passport user serialization
+passport.serializeUser((user, done) => done(null, user.id));
+
+passport.deserializeUser(async (id, done) => {
+    try {
+        const user = await User.findById(id);
+        done(null, user);
+    } catch (error) {
+        done(error, null);
+    }
+});
+
+// Routes have been consolidated in the Profile picture routes section
+
+// Routes have been moved to the Auth Routes section below
+
+// Log static paths for debugging
+console.log('Frontend path:', frontendPath);
+console.log('Static directories configured:', {
+    public: path.join(frontendPath, 'public'),
+    css: path.join(frontendPath, 'css'),
+    assets: path.join(frontendPath, 'assets')
+});
+
+// Additional route middleware
 
 // Middleware to check authentication
 const isAuthenticated = (req, res, next) => {
