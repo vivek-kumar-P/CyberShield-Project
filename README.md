@@ -53,14 +53,22 @@ A modern, futuristic cybersecurity management platform built with Node.js, Expre
    ```
 
 3. **Environment Setup**
-   Create a `.env` file in the backend directory:
-   ```env
-   MONGODB_URI=your_mongodb_atlas_connection_string
-   SESSION_SECRET=your_session_secret
-   GITHUB_CLIENT_ID=your_github_oauth_client_id
-   GITHUB_CLIENT_SECRET=your_github_oauth_client_secret
-   ADMIN_PASSWORD=your_admin_password
+   Copy the `.env.example` file to `.env` and configure with your actual values:
+   ```bash
+   cp .env.example .env
    ```
+   
+   Then edit `.env` with your actual credentials:
+   ```env
+   NODE_ENV=development
+   SESSION_SECRET=your-unique-session-secret-here-generate-a-strong-random-string
+   GITHUB_CLIENT_ID=your-github-oauth-client-id-here
+   GITHUB_CLIENT_SECRET=your-github-oauth-client-secret-here
+   MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/database?retryWrites=true&w=majority
+   ADMIN_PASSWORD=your-secure-admin-password-here
+   ```
+   
+   **⚠️ Security Note**: Never commit the `.env` file to version control. The `.env.example` file contains placeholder values only.
 
 4. **Start the server**
    ```bash
@@ -178,6 +186,65 @@ CyberShield/
 ### Admin
 - `GET /admin/users` - Get all users (admin only)
 
+## 🔐 Environment Variables Configuration
+
+### Required Environment Variables
+
+The application requires the following environment variables to be configured:
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `NODE_ENV` | Application environment | `development` or `production` |
+| `SESSION_SECRET` | Secret key for session encryption | `your-unique-32-character-secret-key` |
+| `GITHUB_CLIENT_ID` | GitHub OAuth Application Client ID | `Ov23liXXXXXXXXXXXX` |
+| `GITHUB_CLIENT_SECRET` | GitHub OAuth Application Client Secret | `your-github-oauth-secret` |
+| `MONGODB_URI` | MongoDB connection string | `mongodb+srv://user:pass@cluster.mongodb.net/db` |
+| `ADMIN_PASSWORD` | Password for admin access | `your-secure-admin-password` |
+
+### Setting Up Environment Variables
+
+1. **Copy the template file:**
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Configure GitHub OAuth:**
+   - Go to [GitHub Developer Settings](https://github.com/settings/applications/new)
+   - Create a new OAuth App
+   - Set Homepage URL: `http://localhost:3000` (for development)
+   - Set Authorization callback URL: `http://localhost:3000/auth/github/callback`
+   - Copy the Client ID and Client Secret to your `.env` file
+
+3. **Configure MongoDB:**
+   - Create a free account at [MongoDB Atlas](https://cloud.mongodb.com/)
+   - Create a new cluster
+   - Create a database user
+   - Copy the connection string to your `.env` file
+   - Replace `<password>` with your database user password
+
+4. **Generate a Session Secret:**
+   ```bash
+   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+   ```
+
+5. **Set Admin Password:**
+   - Choose a strong password for admin access
+   - This is used for accessing admin endpoints
+
+### Production Environment Variables
+
+For production deployment (e.g., Vercel, Heroku):
+
+1. **Vercel**: Add environment variables in the Vercel dashboard
+2. **Heroku**: Use `heroku config:set VARIABLE_NAME=value`
+3. **Other platforms**: Refer to your platform's documentation
+
+**⚠️ Security Best Practices:**
+- Never commit `.env` files to version control
+- Use strong, unique values for all secrets
+- Rotate secrets regularly
+- Use different values for development and production
+
 ## 🚀 Deployment
 
 ### Environment Variables
@@ -229,70 +296,3 @@ For support, email info@cybershield.com or create an issue in this repository.
 ---
 
 Made with ❤️ and lots of ☕ by the CyberShield team.
-   ```bash
-   npm install
-   ```
-
-2. **Start the server:**
-   ```bash
-   npm start
-   ```
-   
-   Or from the backend directory:
-   ```bash
-   cd backend
-   npm start
-   ```
-
-3. **Open your browser and navigate to:**
-   ```
-   http://localhost:3000
-   ```
-
-### Environment Variables
-
-The project uses a `.env` file in the backend directory with the following variables:
-
-- `GITHUB_CLIENT_ID` - GitHub OAuth Client ID
-- `GITHUB_CLIENT_SECRET` - GitHub OAuth Client Secret  
-- `SESSION_SECRET` - Secret key for session encryption
-- `ADMIN_PASSWORD` - Password for admin access
-
-## Usage
-
-1. **Home Page**: Visit `http://localhost:3000` to see the main landing page
-2. **Authentication**: 
-   - Sign up with email and password
-   - Or sign in with GitHub
-3. **Dashboard**: Access security features after login
-4. **Profile**: Manage your profile settings
-
-## API Endpoints
-
-- `GET /` - Home page
-- `GET /public/login.html` - Login page
-- `GET /public/dashboard.html` - Dashboard (authenticated)
-- `GET /public/profile.html` - Profile page (authenticated)
-- `POST /signup` - User registration
-- `POST /login` - User login
-- `GET /auth/github` - GitHub OAuth
-- `GET /logout` - User logout
-- `GET /user` - Get user data (authenticated)
-
-## Technology Stack
-
-- **Backend**: Node.js, Express.js
-- **Database**: MongoDB Atlas
-- **Authentication**: Passport.js, bcrypt
-- **Frontend**: HTML5, CSS3, JavaScript
-- **Session Store**: MongoDB
-
-## Development
-
-To run in development mode:
-
-```bash
-npm run dev
-```
-
-The server will start on `http://localhost:3000` and serve both the API and static files.

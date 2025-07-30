@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CyberShield - Secure Profile Settings">
+    <title>CyberShield - Profile Settings</title>
+    
+    <!-- Preload Critical Resources -->
+    <link rel="preload" href="../css/dashboard.css" as="style">
+    <link rel="preload" href="../css/profile.css" as="style">
+    <link rel="preload" href="../css/footer.css" as="style">
+    <link rel="preload" href="../assets/image.png" as="image">
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/profile.css">
+    <link rel="stylesheet" href="../css/footer.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
+    
+    <!-- Optimized Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome (with preload) -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Chart.js (deferred) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    
+    <!-- Preload Footer -->
+    <link rel="prefetch" href="/components/footer.html">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="logo-container">
+                <img src="../assets/image.png" alt="CyberShield Logo" class="logo-img">
+                <h1 class="logo">CyberShield</h1>
+            </div>
+            <nav>
+                <button class="hamburger" aria-label="Toggle navigation">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <ul class="nav-links">
+                    <li><a href="dashboard.html#home">Home</a></li>
+                    <li><a href="dashboard.html#services">Services</a></li>
+                    <li><a href="dashboard.html#about">About</a></li>
+                    <li><a href="dashboard.html#contact">Contact</a></li>
+                    <li class="profile-container">
+                        <img src="../assets/default-avatar.png" alt="Profile Picture" class="profile-pic" id="profile-pic" role="button" tabindex="0">
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-profile">
+                <img src="/assets/default-avatar.png" alt="Profile Picture" class="sidebar-profile-pic" id="sidebar-profile-pic">
+                <span class="profile-status" id="sidebar-profile-name">User Profile</span>
+            </div>
+            <button class="close-sidebar" id="close-sidebar" aria-label="Close Sidebar">
+                <span>×</span>
+            </button>
+        </div>
+        <nav class="sidebar-nav">
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="dashboard.html#security-dashboard" class="sidebar-item">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Security Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="dashboard.html#threat-alerts" class="sidebar-item">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Threat Alerts</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="dashboard.html#password-manager" class="sidebar-item">
+                        <i class="fas fa-key"></i>
+                        <span>Password Manager</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="dashboard.html#network-scan" class="sidebar-item">
+                        <i class="fas fa-network-wired"></i>
+                        <span>Network Scan</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="dashboard.html#data-encryption" class="sidebar-item">
+                        <i class="fas fa-lock"></i>
+                        <span>Data Encryption</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/profile.html" class="sidebar-item active">
+                        <i class="fas fa-user-cog"></i>
+                        <span>Profile Settings</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="logout-btn" aria-label="Logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <!-- Profile Section -->
+    <section class="profile-section">
+        <div class="profile-grid">
+            <!-- Profile Header -->
+            <div class="profile-header">
+                <h1>Security Profile</h1>
+                <p class="profile-subtitle">Manage your cybersecurity profile and monitor system resources</p>
+            </div>
+
+            <!-- Profile Information Card -->
+            <div class="profile-card">
+                <div class="profile-info">
+                    <div class="profile-pic-container">
+                        <img src="/assets/default-avatar.png" alt="Profile Picture" class="profile-pic-large" id="profile-pic-large">
+                        <div class="upload-overlay">
+                            <span class="upload-icon">📷</span>
+                        </div>
+                        <div class="delete-overlay" id="delete-photo-btn" style="display: none;">
+                            <span class="delete-icon">🗑️</span>
+                        </div>
+                        <input type="file" id="profile-upload" class="profile-upload" accept="image/*">
+                    </div>
+                    <h2 class="profile-name" id="profile-name">User Profile</h2>
+                    <p class="profile-email" id="profile-email">user@example.com</p>
+                    <div class="profile-status">
+                        <span class="status-dot"></span>
+                        <span>Active Security Status</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resource Monitoring Card -->
+            <div class="resource-card">
+                <h3>System Resources</h3>
+                <div class="resource-grid">
+                    <div class="resource-item">
+                        <div class="resource-label">CPU Usage</div>
+                        <div class="resource-value" id="cpu-value">67%</div>
+                    </div>
+                    <div class="resource-item">
+                        <div class="resource-label">Memory</div>
+                        <div class="resource-value" id="memory-value">84%</div>
+                    </div>
+                    <div class="resource-item">
+                        <div class="resource-label">Network</div>
+                        <div class="resource-value" id="network-value">42%</div>
+                    </div>
+                    <div class="resource-item">
+                        <div class="resource-label">Storage</div>
+                        <div class="resource-value" id="storage-value">78%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resource Usage Chart -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">Resource Usage Analytics</h3>
+                    <button class="chart-toggle" onclick="toggleResourceChart()">Toggle View</button>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="resourceChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Threat Detection Chart -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">Threat Detection Overview</h3>
+                    <button class="chart-toggle" onclick="toggleThreatChart()">Toggle View</button>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="threatChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Security Statistics -->
+            <div class="security-stats">
+                <div class="stat-card">
+                    <span class="stat-icon">🛡️</span>
+                    <div class="stat-value">127</div>
+                    <div class="stat-label">Threats Blocked</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">⚠️</span>
+                    <div class="stat-value">8</div>
+                    <div class="stat-label">Warnings</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">🚨</span>
+                    <div class="stat-value">2</div>
+                    <div class="stat-label">Critical Alerts</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">📊</span>
+                    <div class="stat-value">99.8%</div>
+                    <div class="stat-label">System Uptime</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Include Footer -->
+    <div id="footer-placeholder"></div>
+
+    <!-- JavaScript Files -->
+    <script src="../assets/js/profile.js"></script>
+    <script src="../assets/js/footer-loader.js"></script>
+    
+    <!-- Dashboard Scripts -->
+    <script>
+        // Load user profile data
+        fetch('/user')
+            .then(response => response.json())
+            .then(data => {
+                if (data.user) {
+                    document.getElementById('profile-name').textContent = data.user.name || 'User Profile';
+                    document.getElementById('profile-email').textContent = data.user.email || 'user@example.com';
+                    
+                    if (data.user.profilePicture && data.user.profilePicture !== '/assets/default-avatar.png') {
+                        document.getElementById('profile-pic').src = data.user.profilePicture;
+                        document.getElementById('profile-pic-large').src = data.user.profilePicture;
+                        document.getElementById('sidebar-profile-pic').src = data.user.profilePicture;
+                        document.getElementById('delete-photo-btn').style.display = 'flex';
+                    }
+                }
+            })
+            .catch(err => console.error('Error loading user data:', err));
+
+        // Initialize charts
+        let resourceChart, threatChart;
+        let isResourceChartBar = true;
+        let isThreatChartBar = true;
+
+        function initCharts() {
+            // Resource Chart
+            const resourceCtx = document.getElementById('resourceChart').getContext('2d');
+            resourceChart = new Chart(resourceCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['CPU', 'Memory', 'Network', 'Storage'],
+                    datasets: [{
+                        data: [67, 84, 42, 78],
+                        backgroundColor: ['#4F46E5', '#06B6D4', '#10B981', '#F97316']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            // Threat Chart
+            const threatCtx = document.getElementById('threatChart').getContext('2d');
+            threatChart = new Chart(threatCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Malware', 'Phishing', 'DDoS', 'Other'],
+                    datasets: [{
+                        data: [45, 25, 15, 15],
+                        backgroundColor: ['#DC2626', '#F97316', '#FBBF24', '#6B7280']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        // Toggle chart types with animation
+        function toggleResourceChart() {
+            if (!resourceChart) return;
+            
+            isResourceChartBar = !isResourceChartBar;
+            const newType = isResourceChartBar ? 'bar' : 'pie';
+            
+            // Save the old data
+            const data = resourceChart.data;
+            
+            // Destroy old chart
+            resourceChart.destroy();
+            
+            // Create new chart with animation
+            const resourceCtx = document.getElementById('resourceChart').getContext('2d');
+            resourceChart = new Chart(resourceCtx, {
+                type: newType,
+                data: data,
+                options: {
+                    responsive: true,
+                    animation: {
+                        duration: 750,
+                        easing: 'easeInOutQuart'
+                    },
+                    plugins: {
+                        legend: { 
+                            display: !isResourceChartBar,
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function toggleThreatChart() {
+            if (!threatChart) return;
+            
+            isThreatChartBar = !isThreatChartBar;
+            const newType = isThreatChartBar ? 'bar' : 'pie';
+            
+            // Save the old data
+            const data = threatChart.data;
+            
+            // Destroy old chart
+            threatChart.destroy();
+            
+            // Create new chart with animation
+            const threatCtx = document.getElementById('threatChart').getContext('2d');
+            threatChart = new Chart(threatCtx, {
+                type: newType,
+                data: data,
+                options: {
+                    responsive: true,
+                    animation: {
+                        duration: 750,
+                        easing: 'easeInOutQuart'
+                    },
+                    plugins: {
+                        legend: { 
+                            display: !isThreatChartBar,
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Enhanced sidebar functionality with smooth animations
+        const sidebar = document.getElementById('sidebar');
+        const hamburger = document.querySelector('.hamburger');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        const closeSidebarBtn = document.getElementById('close-sidebar');
+        const navProfilePic = document.getElementById('profile-pic');
+        let sidebarActive = false;
+
+        function openSidebar() {
+            sidebarActive = true;
+            sidebar.classList.add('active');
+            sidebarOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // Update active menu item
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.toggle('active', item.getAttribute('href') === currentPath);
+            });
+        }
+
+        function closeSidebar() {
+            sidebarActive = false;
+            sidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function toggleSidebar(e) {
+            e.stopPropagation();
+            if (sidebarActive) {
+                closeSidebar();
+            } else {
+                openSidebar();
+            }
+        }
+
+        // Toggle sidebar with hamburger or profile picture
+        hamburger.addEventListener('click', toggleSidebar);
+        navProfilePic.addEventListener('click', toggleSidebar);
+        navProfilePic.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                toggleSidebar(e);
+            }
+        });
+
+        // Close sidebar with close button
+        closeSidebarBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            closeSidebar();
+        });
+
+        // Close sidebar when clicking overlay
+        sidebarOverlay.addEventListener('click', closeSidebar);
+
+        // Prevent sidebar from closing when clicking inside it
+        sidebar.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+
+        // Close sidebar on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && sidebarActive) {
+                closeSidebar();
+            }
+        });
+
+        // Close sidebar when clicking outside
+        document.addEventListener('click', function(e) {
+            const clickedElement = e.target;
+            if (sidebarActive && 
+                !sidebar.contains(clickedElement) && 
+                !hamburger.contains(clickedElement) && 
+                !navProfilePic.contains(clickedElement)) {
+                closeSidebar();
+            }
+        });
+
+        // Handle menu item clicks
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            item.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    closeSidebar();
+                }
+            });
+        });
+
+        // Update active menu item on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.toggle('active', item.getAttribute('href') === currentPath);
+            });
+        });
+
+        // Logout functionality
+        document.querySelector('.logout-btn').addEventListener('click', function() {
+            window.location.href = '/logout';
+        });
+
+        // Profile picture upload functionality with loading state and validation
+        const profileUpload = document.getElementById('profile-upload');
+        const profilePicLarge = document.getElementById('profile-pic-large');
+        const profilePic = document.getElementById('profile-pic');
+        const sidebarProfilePic = document.getElementById('sidebar-profile-pic');
+        const deletePhotoBtn = document.getElementById('delete-photo-btn');
+        let isUploading = false;
+
+        // Create loading overlay
+        const loadingOverlay = document.createElement('div');
+        loadingOverlay.className = 'loading-overlay';
+        loadingOverlay.innerHTML = `
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Uploading...</div>
+        `;
+        document.querySelector('.profile-pic-container').appendChild(loadingOverlay);
+        
+        // Show delete button on hover if not using default avatar
+        profilePicLarge.addEventListener('mouseover', function() {
+            if (!isUploading && profilePicLarge.src && !profilePicLarge.src.includes('default-avatar.png')) {
+                deletePhotoBtn.style.display = 'flex';
+            }
+        });
+
+        profilePicLarge.addEventListener('mouseout', function(e) {
+            if (!e.relatedTarget || !e.relatedTarget.classList.contains('delete-overlay')) {
+                deletePhotoBtn.style.display = 'none';
+            }
+        });
+
+        // Add loading state styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .loading-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                border-radius: 50%;
+                z-index: 100;
+            }
+            .loading-overlay.active {
+                display: flex;
+            }
+            .loading-spinner {
+                width: 40px;
+                height: 40px;
+                border: 3px solid #f3f3f3;
+                border-top: 3px solid #4F46E5;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            }
+            .loading-text {
+                color: white;
+                margin-top: 10px;
+                font-size: 14px;
+            }
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            .profile-pic-container {
+                position: relative;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Trigger file upload
+        document.querySelector('.upload-overlay').addEventListener('click', function() {
+            profileUpload.click();
+        });
+
+        document.querySelector('.profile-pic-large').addEventListener('click', function(e) {
+            if (!e.target.classList.contains('delete-icon')) {
+                profileUpload.click();
+            }
+        });
+
+        // Handle file upload with preview and validation
+        profileUpload.addEventListener('change', async function(e) {
+            if (!e.target.files || !e.target.files[0]) return;
+
+            const file = e.target.files[0];
+            
+            // Validate file type
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (!allowedTypes.includes(file.type)) {
+                alert('Please upload a valid image file (JPEG, PNG, GIF, or WEBP)');
+                e.target.value = '';
+                return;
+            }
+
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (file.size > maxSize) {
+                alert('File size should be less than 5MB');
+                e.target.value = '';
+                return;
+            }
+
+            // Show preview before upload
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const tempPreview = e.target.result;
+                profilePicLarge.src = tempPreview;
+            };
+            reader.readAsDataURL(file);
+
+            try {
+                isUploading = true;
+                loadingOverlay.classList.add('active');
+                deletePhotoBtn.style.display = 'none';
+
+                const formData = new FormData();
+                formData.append('profilePicture', file);
+
+                const response = await fetch('/api/upload-profile-picture', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error);
+
+                // Update all profile pictures with fade effect
+                const newPicturePath = data.profilePicture;
+                
+                function updateImage(imgElement, src) {
+                    imgElement.style.opacity = '0';
+                    setTimeout(() => {
+                        imgElement.src = src;
+                        imgElement.style.opacity = '1';
+                    }, 200);
+                }
+
+                [profilePicLarge, profilePic, sidebarProfilePic].forEach(img => {
+                    img.style.transition = 'opacity 0.2s ease';
+                    updateImage(img, newPicturePath);
+                });
+                
+                // Show delete button
+                setTimeout(() => {
+                    deletePhotoBtn.style.display = 'flex';
+                }, 500);
+
+                // Clear the input
+                e.target.value = '';
+                
+                // Show success notification
+                showNotification('Profile picture updated successfully!', 'success');
+            } catch (error) {
+                console.error('Error uploading profile picture:', error);
+                showNotification('Failed to upload profile picture. Please try again.', 'error');
+            } finally {
+                isUploading = false;
+                loadingOverlay.classList.remove('active');
+            }
+        });
+
+        // Handle profile picture deletion
+        deletePhotoBtn.addEventListener('click', async function() {
+            if (!confirm('Are you sure you want to remove your profile picture?')) return;
+
+            try {
+                const response = await fetch('/api/delete-profile-picture', {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error);
+
+                // Update all profile pictures to default
+                const defaultPicture = data.profilePicture;
+                profilePicLarge.src = defaultPicture;
+                profilePic.src = defaultPicture;
+                sidebarProfilePic.src = defaultPicture;
+                
+                // Hide delete button
+                deletePhotoBtn.style.display = 'none';
+            } catch (error) {
+                console.error('Error deleting profile picture:', error);
+                alert('Failed to delete profile picture. Please try again.');
+            }
+        });
+
+        // Initialize charts when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+            loadFooter();
+        });
+
+        // Load footer using the common footer loader
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof loadFooter === 'function') {
+                loadFooter();
+            } else {
+                console.error('Footer loader not found');
+                const footerPlaceholder = document.getElementById('footer-placeholder');
+                if (footerPlaceholder) {
+                    footerPlaceholder.innerHTML = '<footer class="footer"><div class="container"><p>&copy; 2025 CyberShield. All rights reserved.</p></div></footer>';
+                }
+            }
+        });
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.opacity = '1';
+            }, 100);
+
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 300);
+            }, 3000);
+        }
+
+        // Add notification styles
+        const notificationStyles = document.createElement('style');
+        notificationStyles.textContent = `
+            .notification {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 25px;
+                border-radius: 8px;
+                color: white;
+                font-size: 16px;
+                z-index: 1000;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            .notification.success {
+                background-color: #10B981;
+            }
+            .notification.error {
+                background-color: #EF4444;
+            }
+            .notification.info {
+                background-color: #4F46E5;
+            }
+        `;
+        document.head.appendChild(notificationStyles);
+    </script>
+</body>
+</html>

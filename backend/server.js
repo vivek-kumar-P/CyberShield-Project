@@ -18,6 +18,57 @@ const MONGODB_URI = process.env.MONGODB_URI;
 const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID;
 const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
 const isProduction = process.env.NODE_ENV === 'production';
+
+// Validate required environment variables
+function validateEnvironmentVariables() {
+  const required = [
+    'MONGODB_URI',
+    'GITHUB_CLIENT_ID', 
+    'GITHUB_CLIENT_SECRET',
+    'SESSION_SECRET'
+  ];
+  
+  const missing = required.filter(envVar => !process.env[envVar]);
+  
+  if (missing.length > 0) {
+    console.error('❌ Missing required environment variables:');
+    missing.forEach(envVar => {
+      console.error(`   - ${envVar}`);
+    });
+    console.error('\n📝 Please check your .env file and ensure all required variables are set.');
+    console.error('💡 See .env.example for the template and SECURITY.md for setup instructions.\n');
+    process.exit(1);
+  }
+  
+  // Validate that placeholder values are not being used
+  const placeholders = {
+    'GITHUB_CLIENT_ID': 'your-github-oauth-client-id-here',
+    'GITHUB_CLIENT_SECRET': 'your-github-oauth-client-secret-here',
+    'MONGODB_URI': 'mongodb+srv://username:password@cluster.mongodb.net/database?retryWrites=true&w=majority',
+    'SESSION_SECRET': 'your-unique-session-secret-here-generate-a-strong-random-string'
+  };
+  
+  const usingPlaceholders = Object.entries(placeholders).filter(([envVar, placeholder]) => 
+    process.env[envVar] === placeholder
+  );
+  
+  if (usingPlaceholders.length > 0) {
+    console.error('⚠️  WARNING: Placeholder values detected in environment variables:');
+    usingPlaceholders.forEach(([envVar]) => {
+      console.error(`   - ${envVar} is using placeholder value`);
+    });
+    console.error('\n🔧 Please replace placeholder values with your actual credentials.');
+    console.error('📖 See SECURITY.md for detailed setup instructions.\n');
+    
+    if (isProduction) {
+      console.error('❌ Cannot start in production with placeholder values!');
+      process.exit(1);
+    }
+  }
+}
+
+// Validate environment on startup
+validateEnvironmentVariables();
 const frontendPath = isProduction 
   ? path.join(process.cwd(), 'frontend') 
   : path.join(__dirname, '../frontend');

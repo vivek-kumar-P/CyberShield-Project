@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberShield - Profile Settings</title>
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/profile.css">
+    <link rel="stylesheet" href="../css/footer.css">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="logo-container">
+                <img src="../assets/image.png" alt="CyberShield Logo" class="logo-img">
+                <h1 class="logo">CyberShield</h1>
+            </div>
+            <nav>
+                <button class="hamburger" aria-label="Toggle navigation">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <ul class="nav-links">
+                    <li><a href="dashboard.html#home">Home</a></li>
+                    <li><a href="dashboard.html#services">Services</a></li>
+                    <li><a href="dashboard.html#about">About</a></li>
+                    <li><a href="dashboard.html#contact">Contact</a></li>
+                    <li class="profile-container">
+                        <img src="../assets/default-avatar.png" alt="Profile Picture" class="profile-pic" id="profile-pic">
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-profile">
+            <img src="/assets/default-avatar.png" alt="Profile Picture" class="sidebar-profile-pic" id="sidebar-profile-pic">
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html#security-dashboard" class="sidebar-item">Security Dashboard</a></li>
+            <li><a href="dashboard.html#threat-alerts" class="sidebar-item">Threat Alerts</a></li>
+            <li><a href="dashboard.html#password-manager" class="sidebar-item">Password Manager</a></li>
+            <li><a href="dashboard.html#network-scan" class="sidebar-item">Network Scan</a></li>
+            <li><a href="dashboard.html#data-encryption" class="sidebar-item">Data Encryption</a></li>
+            <li><a href="/profile.html" class="sidebar-item active">Profile Settings</a></li>
+        </ul>
+        <button class="logout-btn" aria-label="Logout">
+            <span>🚪</span>
+            <span>Logout</span>
+        </button>
+    </aside>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <!-- Profile Section -->
+    <section class="profile-section">
+        <div class="profile-grid">
+            <!-- Profile Header -->
+            <div class="profile-header">
+                <h1>Security Profile</h1>
+                <p class="profile-subtitle">Manage your cybersecurity profile and monitor system resources</p>
+            </div>
+
+            <!-- Profile Information Card -->
+            <div class="profile-card">
+                <div class="profile-info">
+                    <div class="profile-pic-container">
+                        <img src="/assets/default-avatar.png" alt="Profile Picture" class="profile-pic-large" id="profile-pic-large">
+                        <div class="upload-overlay">
+                            <span class="upload-icon">📷</span>
+                        </div>
+                        <input type="file" id="profile-upload" class="profile-upload" accept="image/*">
+                    </div>
+                    <h2 class="profile-name" id="profile-name">User Profile</h2>
+                    <p class="profile-email" id="profile-email">user@example.com</p>
+                    <div class="profile-status">
+                        <span class="status-dot"></span>
+                        <span>Active Security Status</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resource Monitoring Card -->
+            <div class="resource-card">
+                <h3>System Resources</h3>
+                <div class="resource-grid">
+                    <div class="resource-item">
+                        <div class="resource-label">CPU Usage</div>
+                        <div class="resource-value" id="cpu-value">67%</div>
+                    </div>
+                    <div class="resource-item">
+                        <div class="resource-label">Memory</div>
+                        <div class="resource-value" id="memory-value">84%</div>
+                    </div>
+                    <div class="resource-item">
+                        <div class="resource-label">Network</div>
+                        <div class="resource-value" id="network-value">42%</div>
+                    </div>
+                    <div class="resource-item">
+                        <div class="resource-label">Storage</div>
+                        <div class="resource-value" id="storage-value">78%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resource Usage Chart -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">Resource Usage Analytics</h3>
+                    <button class="chart-toggle" onclick="toggleResourceChart()">Toggle View</button>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="resourceChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Threat Detection Chart -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">Threat Detection Overview</h3>
+                    <button class="chart-toggle" onclick="toggleThreatChart()">Toggle View</button>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="threatChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Security Statistics -->
+            <div class="security-stats">
+                <div class="stat-card">
+                    <span class="stat-icon">🛡️</span>
+                    <div class="stat-value">127</div>
+                    <div class="stat-label">Threats Blocked</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">⚠️</span>
+                    <div class="stat-value">8</div>
+                    <div class="stat-label">Warnings</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">🚨</span>
+                    <div class="stat-value">2</div>
+                    <div class="stat-label">Critical Alerts</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">📊</span>
+                    <div class="stat-value">99.8%</div>
+                    <div class="stat-label">System Uptime</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- JavaScript Files -->
+    <script src="../assets/js/profile.js"></script>
+    
+    <!-- Common dashboard functionality -->
+    <script>
+        // Load user profile data
+        fetch('/user')
+            .then(response => response.json())
+            .then(data => {
+                if (data.user) {
+                    document.getElementById('profile-name').textContent = data.user.name || 'User Profile';
+                    document.getElementById('profile-email').textContent = data.user.email || 'user@example.com';
+                    
+                    if (data.user.profilePicture) {
+                        document.getElementById('profile-pic').src = data.user.profilePicture;
+                        document.getElementById('profile-pic-large').src = data.user.profilePicture;
+                        document.getElementById('sidebar-profile-pic').src = data.user.profilePicture;
+                    }
+                }
+            })
+            .catch(err => console.error('Error loading user data:', err));
+
+        // Hamburger menu functionality
+        document.querySelector('.hamburger').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('active');
+        });
+
+        // Logout functionality
+        document.querySelector('.logout-btn').addEventListener('click', function() {
+            window.location.href = '/logout';
+        });
+
+        // Profile picture upload trigger
+        document.querySelector('.upload-overlay').addEventListener('click', function() {
+            document.getElementById('profile-upload').click();
+        });
+
+        document.querySelector('.profile-pic-large').addEventListener('click', function() {
+            document.getElementById('profile-upload').click();
+        });
+    </script>
+</body>
+</html>
